@@ -1,28 +1,12 @@
 [
   {
     "id": 1,
-    "status": true,
-    "title": "Mouse Logitech G203",
-    "description": "Mouse gamer RGB",
-    "code": "LOG203",
-    "price": 22000,
-    "stock": 15,
-    "category": "perifericos",
-    "thumbnails": [
-      "g203.jpg"
-    ]
+    "title": "mouse",
+    "price": "3500"
   },
   {
     "id": 2,
-    "status": true,
-    "title": "Teclado Redragon K552",
-    "description": "Teclado mecánico RGB",
-    "code": "RED552",
-    "price": 45000,
-    "stock": 10,
-    "category": "perifericos",
-    "thumbnails": [
-      "k552.jpg"
-    ]
+    "title": "teclado",
+    "price": "5000"
   }
 ]

@@ -11,57 +11,24 @@ export default class ProductManager {
     return JSON.parse(data);
   }
 
-  async getProductById(id) {
-    const products = await this.getProducts();
-    return products.find((p) => p.id === Number(id));
-  }
-
   async addProduct(product) {
     const products = await this.getProducts();
 
-    const newId =
-      products.length === 0 ? 1 : products[products.length - 1].id + 1;
-
     const newProduct = {
-      id: newId,
-      status: true,
+      id: products.length === 0 ? 1 : products[products.length - 1].id + 1,
       ...product,
     };
 
     products.push(newProduct);
 
     await fs.promises.writeFile(this.path, JSON.stringify(products, null, 2));
-
     return newProduct;
-  }
-
-  async updateProduct(id, updatedFields) {
-    const products = await this.getProducts();
-    const index = products.findIndex((p) => p.id === Number(id));
-
-    if (index === -1) return null;
-
-    products[index] = {
-      ...products[index],
-      ...updatedFields,
-      id: products[index].id,
-    };
-
-    await fs.promises.writeFile(this.path, JSON.stringify(products, null, 2));
-
-    return products[index];
   }
 
   async deleteProduct(id) {
     const products = await this.getProducts();
-    const exists = products.some((p) => p.id === Number(id));
-
-    if (!exists) return null;
-
-    const filtered = products.filter((p) => p.id !== Number(id));
+    const filtered = products.filter((p) => p.id !== id);
 
     await fs.promises.writeFile(this.path, JSON.stringify(filtered, null, 2));
-
-    return true;
   }
 }

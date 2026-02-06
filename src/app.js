@@ -1,15 +1,45 @@
 import express from "express";
-import productsRouter from "./routes/products.router.js";
-import cartsRouter from "./routes/carts.router.js";
+import { Server } from "socket.io";
+import handlebars from "express-handlebars";
+import viewsRouter from "./routes/views.router.js";
+import ProductManager from "./managers/ProductManager.js";
 
 const app = express();
 const PORT = 8080;
 
-app.use(express.json());
+const productManager = new ProductManager("./src/data/products.json");
 
-app.use("/api/products", productsRouter);
-app.use("/api/carts", cartsRouter);
+// Handlebars
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
+app.set("views", "./src/views");
 
-app.listen(PORT, () => {
-  console.log("Servidor escuchando en puerto 8080");
+// Static
+app.use(express.static("./src/public"));
+
+// Router
+app.use("/", viewsRouter);
+
+// Server
+const httpServer = app.listen(PORT, () =>
+  console.log(`Servidor en puerto ${PORT}`),
+);
+
+// Socket.io
+const io = new Server(httpServer);
+
+io.on("connection", async (socket) => {
+  console.log("Cliente conectado");
+
+  socket.emit("products", await productManager.getProducts());
+
+  socket.on("addProduct", async (product) => {
+    await productManager.addProduct(product);
+    io.emit("products", await productManager.getProducts());
+  });
+
+  socket.on("deleteProduct", async (id) => {
+    await productManager.deleteProduct(id);
+    io.emit("products", await productManager.getProducts());
+  });
 });
