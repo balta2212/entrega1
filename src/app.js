@@ -1,45 +1,40 @@
 import express from "express";
+import mongoose from "mongoose";
+import { engine } from "express-handlebars";
 import { Server } from "socket.io";
-import handlebars from "express-handlebars";
+
 import viewsRouter from "./routes/views.router.js";
-import ProductManager from "./managers/ProductManager.js";
+import productsRouter from "./routes/products.router.js";
+import Product from "./models/product.model.js";
+
+mongoose
+  .connect("mongodb://127.0.0.1:27017/ecommerce")
+  .then(() => console.log("Mongo conectado"))
+  .catch((err) => console.log(err));
 
 const app = express();
 const PORT = 8080;
 
-const productManager = new ProductManager("./src/data/products.json");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("./src/public"));
 
-// Handlebars
-app.engine("handlebars", handlebars.engine());
+app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 app.set("views", "./src/views");
 
-// Static
-app.use(express.static("./src/public"));
-
-// Router
 app.use("/", viewsRouter);
+app.use("/api/products", productsRouter);
 
-// Server
-const httpServer = app.listen(PORT, () =>
-  console.log(`Servidor en puerto ${PORT}`),
-);
+const httpServer = app.listen(PORT, () => {
+  console.log(`Servidor en puerto ${PORT}`);
+});
 
-// Socket.io
 const io = new Server(httpServer);
 
 io.on("connection", async (socket) => {
   console.log("Cliente conectado");
 
-  socket.emit("products", await productManager.getProducts());
-
-  socket.on("addProduct", async (product) => {
-    await productManager.addProduct(product);
-    io.emit("products", await productManager.getProducts());
-  });
-
-  socket.on("deleteProduct", async (id) => {
-    await productManager.deleteProduct(id);
-    io.emit("products", await productManager.getProducts());
-  });
+  const products = await Product.find().lean();
+  socket.emit("products", products);
 });

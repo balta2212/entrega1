@@ -1,33 +1,13 @@
 const socket = io();
 
-const list = document.getElementById("list");
-const form = document.getElementById("form");
+const productList = document.getElementById("productList");
 
-socket.on("products", (products) => {
-  list.innerHTML = "";
+socket.on("products", (data) => {
+  productList.innerHTML = "";
 
-  products.forEach((p) => {
-    list.innerHTML += `
-      <li>
-        ${p.title} - $${p.price}
-        <button onclick="deleteProduct(${p.id})">X</button>
-      </li>
-    `;
+  data.forEach((product) => {
+    const li = document.createElement("li");
+    li.textContent = `${product.title} - $${product.price}`;
+    productList.appendChild(li);
   });
 });
-
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const product = {
-    title: document.getElementById("title").value,
-    price: document.getElementById("price").value,
-  };
-
-  socket.emit("addProduct", product);
-  form.reset();
-});
-
-function deleteProduct(id) {
-  socket.emit("deleteProduct", id);
-}
